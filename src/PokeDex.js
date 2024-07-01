@@ -1,39 +1,30 @@
-import React, { useState } from "react";
-import {v1 as uuid} from "uuid";
-import axios from "axios";
+import React from "react";
+import { useAxios } from "./hooks";
 import PokemonSelect from "./PokemonSelect";
 import PokemonCard from "./PokemonCard";
 import "./PokeDex.css";
 
 /* Renders a list of pokemon cards.
- * Can also add a new card at random,
+ * Can also remove all cards,
+ * and add a new card, either at random
  * or from a dropdown of available pokemon. */
 function PokeDex() {
-  const [pokemon, setPokemon] = useState([]);
-  const addPokemon = async name => {
-    const response = await axios.get(
-      `https://pokeapi.co/api/v2/pokemon/${name}/`
-    );
-    setPokemon(pokemon => [...pokemon, { ...response.data, id: uuid() }]);
+  const [pokemon, addPokemon, clearPokemon] = useAxios("https://pokeapi.co/api/v2/pokemon/");
+
+  const handleAddPokemon = (name) => {
+    addPokemon(name);
   };
+
   return (
     <div className="PokeDex">
       <div className="PokeDex-buttons">
         <h3>Please select your pokemon:</h3>
-        <PokemonSelect add={addPokemon} />
+        <PokemonSelect add={handleAddPokemon} />
+        <button onClick={clearPokemon}>Delete the pokemon!</button>
       </div>
       <div className="PokeDex-card-area">
-        {pokemon.map(cardData => (
-          <PokemonCard
-            key={cardData.id}
-            front={cardData.sprites.front_default}
-            back={cardData.sprites.back_default}
-            name={cardData.name}
-            stats={cardData.stats.map(stat => ({
-              value: stat.base_stat,
-              name: stat.stat.name
-            }))}
-          />
+        {pokemon.map((card, index) => (
+          <PokemonCard key={index} {...card} />
         ))}
       </div>
     </div>
